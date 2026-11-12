@@ -12,19 +12,22 @@ import QuestionBank from "./pages/QuestionBank";
 import QuestionDetail from "./pages/QuestionDetail";
 import NotFound from "./pages/NotFound";
 
+const loadList = (key) => {
+  try {
+    const saved = localStorage.getItem(key);
+    return saved ? JSON.parse(saved) : [];
+  } catch (e) {
+    return [];
+  }
+};
+
 const App = () => {
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [playerName, setPlayerName] = useState("");
-  const [bookmarks, setBookmarks] = useState(() => {
-    try {
-      const saved = localStorage.getItem("ltw_cuoc_bookmarks");
-      return saved ? JSON.parse(saved) : [];
-    } catch (e) {
-      return [];
-    }
-  });
+  const [bookmarks, setBookmarks] = useState(() => loadList("ltw_cuoc_bookmarks"));
+  const [history, setHistory] = useState(() => loadList("ltw_cuoc_history"));
 
   useEffect(() => {
     const controller = new AbortController();
@@ -46,6 +49,10 @@ const App = () => {
     localStorage.setItem("ltw_cuoc_bookmarks", JSON.stringify(bookmarks));
   }, [bookmarks]);
 
+  useEffect(() => {
+    localStorage.setItem("ltw_cuoc_history", JSON.stringify(history));
+  }, [history]);
+
   const toggleBookmark = (id) => {
     setBookmarks(
       bookmarks.includes(id)
@@ -54,20 +61,38 @@ const App = () => {
     );
   };
 
+  const addHistory = (record) => setHistory([...history, record]);
+  const clearHistory = () => setHistory([]);
+
   return (
     <div data-build={BUILD_TAG}>
       <Routes>
         <Route path="/" element={<Layout loading={loading} error={error} />}>
           <Route
             index
-            element={<Home playerName={playerName} onNameChange={setPlayerName} />}
+            element={
+              <Home
+                playerName={playerName}
+                onNameChange={setPlayerName}
+                history={history}
+              />
+            }
           />
           <Route
             path="play"
-            element={<Play questions={questions} playerName={playerName} />}
+            element={
+              <Play
+                questions={questions}
+                playerName={playerName}
+                onFinish={addHistory}
+              />
+            }
           />
           <Route path="result" element={<Result />} />
-          <Route path="history" element={<History />} />
+          <Route
+            path="history"
+            element={<History history={history} onClear={clearHistory} />}
+          />
           <Route
             path="questions"
             element={

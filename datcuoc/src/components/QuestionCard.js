@@ -1,8 +1,16 @@
 import AnswerButton from "./AnswerButton";
 import { LEVELS, MULTIPLIERS, LETTERS, formatMultiplier } from "../data";
 
-const QuestionCard = ({ index, total, question, selected, revealed, onSelect }) => {
-  const { topic, level, question: text, options, answer } = question;
+const QuestionCard = ({
+  index,
+  total,
+  question,
+  selected,
+  revealed,
+  hintShown,
+  onSelect,
+}) => {
+  const { topic, level, question: text, options, answer, hint } = question;
 
   const getState = (i) => {
     if (!revealed) return "";
@@ -15,6 +23,7 @@ const QuestionCard = ({ index, total, question, selected, revealed, onSelect }) 
     <div>
       <p>{`Câu ${index + 1}/${total} · ${topic} · ${LEVELS[level]} (${formatMultiplier(MULTIPLIERS[level])})`}</p>
       <h3>{text}</h3>
+      {hintShown && <p>{`Gợi ý: ${hint}`}</p>}
       <div className="answers">
         {options.map((option, i) => (
           <AnswerButton
