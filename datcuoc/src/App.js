@@ -16,7 +16,15 @@ const App = () => {
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [bookmarks, setBookmarks] = useState([]);
+  const [playerName, setPlayerName] = useState("");
+  const [bookmarks, setBookmarks] = useState(() => {
+    try {
+      const saved = localStorage.getItem("ltw_cuoc_bookmarks");
+      return saved ? JSON.parse(saved) : [];
+    } catch (e) {
+      return [];
+    }
+  });
 
   useEffect(() => {
     const controller = new AbortController();
@@ -34,6 +42,10 @@ const App = () => {
     return () => controller.abort();
   }, []);
 
+  useEffect(() => {
+    localStorage.setItem("ltw_cuoc_bookmarks", JSON.stringify(bookmarks));
+  }, [bookmarks]);
+
   const toggleBookmark = (id) => {
     setBookmarks(
       bookmarks.includes(id)
@@ -46,8 +58,14 @@ const App = () => {
     <div data-build={BUILD_TAG}>
       <Routes>
         <Route path="/" element={<Layout loading={loading} error={error} />}>
-          <Route index element={<Home />} />
-          <Route path="play" element={<Play />} />
+          <Route
+            index
+            element={<Home playerName={playerName} onNameChange={setPlayerName} />}
+          />
+          <Route
+            path="play"
+            element={<Play questions={questions} playerName={playerName} />}
+          />
           <Route path="result" element={<Result />} />
           <Route path="history" element={<History />} />
           <Route
